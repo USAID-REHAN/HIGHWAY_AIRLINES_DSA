@@ -1,0 +1,6 @@
+KHI|Jinnah International Airport|Karachi
+LHE|Allama Iqbal International Airport|Lahore
+ISB|Islamabad International Airport|Islamabad
+PEW|Bacha Khan International Airport|Peshawar
+UET|Quetta International Airport|Quetta
+SKT|Sialkot International Airport|Sialkot
