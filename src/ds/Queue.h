@@ -1,92 +1,129 @@
 #ifndef QUEUE_H
 #define QUEUE_H
 
-#include <string>
 #include <iostream>
+#include <string>
 
-struct QueueNode{
-    std::string passengerID;
-    std::string flightID;
-    QueueNode* next;
+using namespace std;
 
-    QueueNode(std::string pID, std::string fID){
-        passengerID = pID;
-        flightID = fID;
-        next = nullptr;
-    }
+struct QueueNode {
+  string passengerID;
+  string flightID;
+  QueueNode *next;
+
+  // constructor for queue node
+  QueueNode(string pID, string fID) {
+    passengerID = pID;
+    flightID = fID;
+    next = nullptr;
+  }
 };
 
-class Queue{
-    private:
-    QueueNode* front;
-    QueueNode* rear;
+class Queue {
+private:
+  QueueNode *front;
+  QueueNode *rear;
 
-    public:
-    Queue(){
-        front = nullptr;
-        rear = nullptr;
+public:
+  // constructor for queue
+  Queue() {
+    front = nullptr;
+    rear = nullptr;
+  }
+
+  // adds an element to the back of the queue
+  void enqueue(string passengerID, string flightID) {
+    QueueNode *newNode = new QueueNode(passengerID, flightID);
+
+    if (rear == nullptr) {
+      front = rear = newNode;
+      return;
     }
 
-    void enqueue(std::string passengerID, std::string flightID){
-        QueueNode* newNode = new QueueNode(passengerID, flightID);
+    rear->next = newNode;
+    rear = newNode;
+  }
 
-        if(rear == nullptr){
-            front = rear = newNode;
-            return;
-        }
-
-        rear->next = newNode;
-        rear = newNode;
+  // removes and returns the front element
+  QueueNode *dequeue() {
+    if (isEmpty()) {
+      return nullptr;
     }
 
-    QueueNode* dequeue(){
-        if(isEmpty()){
-            return nullptr;
-        }
+    QueueNode *temp = front;
+    front = front->next;
 
-        QueueNode* temp = front;
-        front = front->next;
+    if (front == nullptr) {
+      rear = nullptr;
+    }
 
-        if(front == nullptr){
+    return temp;
+  }
+
+  // removes and returns the first passenger waiting for a specific flight
+  QueueNode *dequeueForFlight(string fID) {
+    if (isEmpty())
+      return nullptr;
+
+    QueueNode *current = front;
+    QueueNode *prev = nullptr;
+
+    while (current != nullptr) {
+      if (current->flightID == fID) {
+        if (prev == nullptr) {
+          front = current->next;
+          if (front == nullptr) {
             rear = nullptr;
+          }
+        } else {
+          prev->next = current->next;
+          if (current == rear) {
+            rear = prev;
+          }
         }
+        current->next = nullptr;
+        return current;
+      }
+      prev = current;
+      current = current->next;
+    }
+    return nullptr;
+  }
 
-        return temp;
+  // returns the front element without removing it
+  QueueNode *peek() { return front; }
+
+  // checks if the queue is empty
+  bool isEmpty() { return front == nullptr; }
+
+  // displays passengers in the waitlist for a flight
+  void display(string flightID) {
+    if (isEmpty()) {
+      cout << "   [-] NO PASSENGERS IN WAITLIST!" << endl;
+      return;
     }
 
-    QueueNode* peek(){
-        return front;
+    cout << "\n========== WAITLIST FOR FLIGHT " << flightID << " ==========\n";
+    QueueNode *temp = front;
+    int position = 1;
+    while (temp != nullptr) {
+      if (temp->flightID == flightID) {
+        cout << "   [" << position << "] Passenger: " << temp->passengerID
+             << endl;
+        position++;
+      }
+      temp = temp->next;
     }
+    cout << "=============================================\n";
+  }
 
-    bool isEmpty(){
-        return front == nullptr;
+  // destructor to free memory
+  ~Queue() {
+    while (!isEmpty()) {
+      QueueNode *temp = dequeue();
+      delete temp;
     }
-
-    void display(std::string flightID){
-        if(isEmpty()){
-            std::cout << "NO PASSENGERS IN WAITLIST!" << std::endl;
-            return;
-        }
-
-        std::cout << "\n===== WAITLIST FOR FLIGHT " << flightID << " =====\n";
-        QueueNode* temp = front;
-        int position = 1;
-        while(temp != nullptr){
-            if(temp->flightID == flightID){
-                std::cout << position << ". PASSENGER ID: " << temp->passengerID << std::endl;
-                position++;
-            }
-            temp = temp->next;
-        }
-        std::cout << "==========================================\n";
-    }
-
-    ~Queue(){
-        while(!isEmpty()){
-            QueueNode* temp = dequeue();
-            delete temp;
-        }
-    }
+  }
 };
 
 #endif

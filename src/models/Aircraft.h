@@ -3,34 +3,42 @@
 
 #include <string>
 
-class Aircraft{
-    private:
-    std::string aircraftID;
-    std::string model;
-    int capacity;
+using namespace std;
 
-    public:
-    Aircraft(){
-        aircraftID = "";
-        model = "";
-        capacity = 0;
-    }
+class Aircraft {
+private:
+  string aircraftID;
+  string model;
+  int capacity;
 
-    Aircraft(std::string id, std::string m, int cap){
-        aircraftID = id;
-        model = m;
-        capacity = cap;
-    }
+public:
+  // default constructor for aircraft
+  Aircraft() {
+    aircraftID = "";
+    model = "";
+    capacity = 0;
+  }
 
-    // SETTERS
-    void setAircraftID(std::string id){ aircraftID = id; }
-    void setModel(std::string m){ model = m; }
-    void setCapacity(int cap){ capacity = cap; }
+  // parameterized constructor for aircraft
+  Aircraft(string id, string m, int cap) {
+    aircraftID = id;
+    model = m;
+    capacity = cap;
+  }
 
-    // GETTERS
-    std::string getAircraftID() const { return aircraftID; }
-    std::string getModel() const { return model; }
-    int getCapacity() const { return capacity; }
+  // sets the aircraft id
+  void setAircraftID(string id) { aircraftID = id; }
+  // sets the aircraft model
+  void setModel(string m) { model = m; }
+  // sets the aircraft capacity
+  void setCapacity(int cap) { capacity = cap; }
+
+  // returns the aircraft id
+  string getAircraftID() const { return aircraftID; }
+  // returns the aircraft model
+  string getModel() const { return model; }
+  // returns the aircraft capacity
+  int getCapacity() const { return capacity; }
 };
 
 #endif

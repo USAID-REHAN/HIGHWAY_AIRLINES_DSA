@@ -98,3 +98,5 @@ P97|Mani Liaqat|mani.liaqat@email.com|pass123|03961234567|PREMIUM
 P98|Amar Khan|amar.khan@email.com|pass123|03971234567|BUSINESS
 P99|Wahaj Ali|wahaj.ali@email.com|pass123|03981234567|ECONOMY_PLUS
 P100|Ramsha Khan|ramsha.khan@email.com|pass123|03991234567|ECONOMY
+P101|Bilal|bilalasif2625@gmail.com|123Password|123456789|PREMIUM
+P102|||||ECONOMY

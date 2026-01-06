@@ -3,57 +3,77 @@
 
 #include <string>
 
-class Passenger{
-    private:
-    std::string passengerID;
-    std::string name;
-    std::string email;
-    std::string password;
-    std::string phone;
-    std::string passengerType; // PREMIUM, BUSINESS, ECONOMY_PLUS, ECONOMY
+using namespace std;
 
-    public:
-    Passenger(){
-        passengerID = "";
-        name = "";
-        email = "";
-        password = "";
-        phone = "";
-        passengerType = "ECONOMY";
-    }
+class Passenger {
+private:
+  string passengerID;
+  string name;
+  string email;
+  string password;
+  string phone;
+  string passengerType; // PREMIUM, BUSINESS, ECONOMY_PLUS, ECONOMY
 
-    Passenger(std::string id, std::string n, std::string e, std::string pass, std::string ph, std::string type){
-        passengerID = id;
-        name = n;
-        email = e;
-        password = pass;
-        phone = ph;
-        passengerType = type;
-    }
+public:
+  // default constructor for passenger
+  Passenger() {
+    passengerID = "";
+    name = "";
+    email = "";
+    password = "";
+    phone = "";
+    passengerType = "ECONOMY";
+  }
 
-    // SETTERS
-    void setPassengerID(std::string id){ passengerID = id; }
-    void setName(std::string n){ name = n; }
-    void setEmail(std::string e){ email = e; }
-    void setPassword(std::string pass){ password = pass; }
-    void setPhone(std::string ph){ phone = ph; }
-    void setPassengerType(std::string type){ passengerType = type; }
+  // parameterized constructor for passenger
+  Passenger(string id, string n, string e, string pass, string ph,
+            string type) {
+    passengerID = id;
+    name = n;
+    email = e;
+    password = pass;
+    phone = ph;
+    passengerType = type;
+  }
 
-    // GETTERS
-    std::string getPassengerID() const { return passengerID; }
-    std::string getName() const { return name; }
-    std::string getEmail() const { return email; }
-    std::string getPassword() const { return password; }
-    std::string getPhone() const { return phone; }
-    std::string getPassengerType() const { return passengerType; }
+  // sets the passenger id
+  void setPassengerID(string id) { passengerID = id; }
+  // sets the passenger name
+  void setName(string n) { name = n; }
+  // sets the passenger email
+  void setEmail(string e) { email = e; }
+  // sets the passenger password
+  void setPassword(string pass) { password = pass; }
+  // sets the passenger phone number
+  void setPhone(string ph) { phone = ph; }
+  // sets the passenger type
+  void setPassengerType(string type) { passengerType = type; }
 
-    // GET PRIORITY FOR BOARDING (LOWER NUMBER = HIGHER PRIORITY)
-    int getPriority() const {
-        if(passengerType == "PREMIUM"){ return 1; }
-        else if(passengerType == "BUSINESS"){ return 2; }
-        else if(passengerType == "ECONOMY_PLUS"){ return 3; }
-        else{ return 4; } // ECONOMY
-    }
+  // returns the passenger id
+  string getPassengerID() const { return passengerID; }
+  // returns the passenger name
+  string getName() const { return name; }
+  // returns the passenger email
+  string getEmail() const { return email; }
+  // returns the passenger password
+  string getPassword() const { return password; }
+  // returns the passenger phone number
+  string getPhone() const { return phone; }
+  // returns the passenger type
+  string getPassengerType() const { return passengerType; }
+
+  // returns the boarding priority (lower number = higher priority)
+  int getPriority() const {
+    if (passengerType == "PREMIUM") {
+      return 1;
+    } else if (passengerType == "BUSINESS") {
+      return 2;
+    } else if (passengerType == "ECONOMY_PLUS") {
+      return 3;
+    } else {
+      return 4;
+    } // ECONOMY
+  }
 };
 
 #endif

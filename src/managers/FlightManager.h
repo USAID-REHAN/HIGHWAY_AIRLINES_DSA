@@ -1,328 +1,434 @@
 #ifndef FLIGHTMANAGER_H
 #define FLIGHTMANAGER_H
 
-#include <vector>
+#include "../CLI/Colors.h"
+#include "../ds/BST.h"
+#include "../ds/LinkedList.h"
+#include "../ds/Stack.h"
+#include "../models/Aircraft.h"
+#include "../models/Flight.h"
 #include <iostream>
 #include <string>
-#include "../models/Flight.h"
-#include "../models/Aircraft.h"
-#include "../ds/BST.h"
-#include "../ds/Stack.h"
-#include "../ds/LinkedList.h"
+#include <vector>
 
-class FlightManager{
-    private:
-    std::vector<Flight>* flightsRef;
-    std::vector<Aircraft>* aircraftsRef;
-    BST flightBST;
-    Stack undoStack;
-    LinkedList activityLog;
+using namespace std;
 
-    std::string generateFlightID(){
-        int maxID = 0;
-        for(int i = 0; i < flightsRef->size(); i++){
-            std::string id = (*flightsRef)[i].getFlightID();
-            if(id.length() > 2){
-                int numID = std::stoi(id.substr(2));
-                if(numID > maxID){
-                    maxID = numID;
-                }
-            }
+class FlightManager {
+private:
+  vector<Flight> *flightsRef;
+  vector<Aircraft> *aircraftsRef;
+  BST flightBST;
+  Stack undoStack;
+  LinkedList activityLog;
+
+  // generates a unique flight id
+  string generateFlightID() {
+    int maxID = 0;
+    for (int i = 0; i < flightsRef->size(); i++) {
+      string id = (*flightsRef)[i].getFlightID();
+      if (id.length() > 2) {
+        int numID = stoi(id.substr(2));
+        if (numID > maxID) {
+          maxID = numID;
         }
-        maxID++;
-        return "HW" + std::to_string(maxID);
+      }
+    }
+    maxID++;
+    return "HW" + to_string(maxID);
+  }
+
+  // checks for aircraft scheduling conflicts
+  bool checkConflict(string aircraftID, string date, string depTime) {
+    // SIMPLE CONFLICT CHECK: SAME AIRCRAFT, SAME DATE, OVERLAPPING TIME
+    for (int i = 0; i < flightsRef->size(); i++) {
+      Flight &f = (*flightsRef)[i];
+      if (f.getAircraftID() == aircraftID && f.getDate() == date &&
+          f.getDepartureTime() == depTime) {
+        return true; // CONFLICT FOUND
+      }
+    }
+    return false;
+  }
+
+  // gets current system timestamp
+  string getCurrentTimestamp() {
+    return "[TIME]"; // SIMPLIFIED - IN REAL APP, USE <ctime>
+  }
+
+public:
+  // constructor for flight manager
+  FlightManager(vector<Flight> *flights, vector<Aircraft> *aircrafts) {
+    flightsRef = flights;
+    aircraftsRef = aircrafts;
+
+    // BUILD BST FROM EXISTING FLIGHTS
+    for (int i = 0; i < flightsRef->size(); i++) {
+      flightBST.insert((*flightsRef)[i]);
+    }
+  }
+
+  // adds a new flight to the system
+  void addFlight() {
+    string aircraftID, origin, dest, depTime, arrTime, date, status;
+    int capacity;
+
+    cout << Colors::BOLD << Colors::BRIGHT_CYAN
+         << "\n========================================\n";
+    cout << "          ADD NEW FLIGHT\n";
+    cout << "========================================\n" << Colors::RESET;
+
+    // SHOW AVAILABLE AIRCRAFT
+    cout << Colors::BOLD << "AVAILABLE AIRCRAFT:\n" << Colors::RESET;
+    for (int i = 0; i < aircraftsRef->size(); i++) {
+      cout << "   " << (*aircraftsRef)[i].getAircraftID() << " - "
+           << (*aircraftsRef)[i].getModel()
+           << " (Capacity: " << (*aircraftsRef)[i].getCapacity() << ")" << endl;
     }
 
-    bool checkConflict(std::string aircraftID, std::string date, std::string depTime){
-        // SIMPLE CONFLICT CHECK: SAME AIRCRAFT, SAME DATE, OVERLAPPING TIME
-        for(int i = 0; i < flightsRef->size(); i++){
-            Flight& f = (*flightsRef)[i];
-            if(f.getAircraftID() == aircraftID && 
-               f.getDate() == date && 
-               f.getDepartureTime() == depTime){
-                return true; // CONFLICT FOUND
-            }
-        }
-        return false;
+    cin.ignore();
+    cout << Colors::BOLD << "ENTER AIRCRAFT ID: " << Colors::RESET;
+    getline(cin, aircraftID);
+
+    // FIND AIRCRAFT CAPACITY
+    capacity = 0;
+    for (int i = 0; i < aircraftsRef->size(); i++) {
+      if ((*aircraftsRef)[i].getAircraftID() == aircraftID) {
+        capacity = (*aircraftsRef)[i].getCapacity();
+        break;
+      }
     }
 
-    std::string getCurrentTimestamp(){
-        return "[TIME]"; // SIMPLIFIED - IN REAL APP, USE <ctime>
+    if (capacity == 0) {
+      cout << Colors::BOLD << Colors::BRIGHT_RED << "[-] INVALID AIRCRAFT ID!"
+           << Colors::RESET << endl;
+      return;
     }
 
-    public:
-    FlightManager(std::vector<Flight>* flights, std::vector<Aircraft>* aircrafts){
-        flightsRef = flights;
-        aircraftsRef = aircrafts;
+    cout << Colors::BOLD << "ENTER ORIGIN (AIRPORT CODE): " << Colors::RESET;
+    getline(cin, origin);
+    cout << Colors::BOLD
+         << "ENTER DESTINATION (AIRPORT CODE): " << Colors::RESET;
+    getline(cin, dest);
+    cout << Colors::BOLD << "ENTER DEPARTURE TIME (HH:MM): " << Colors::RESET;
+    getline(cin, depTime);
+    cout << Colors::BOLD << "ENTER ARRIVAL TIME (HH:MM): " << Colors::RESET;
+    getline(cin, arrTime);
+    cout << Colors::BOLD << "ENTER DATE (DD-MM-YYYY): " << Colors::RESET;
+    getline(cin, date);
 
-        // BUILD BST FROM EXISTING FLIGHTS
-        for(int i = 0; i < flightsRef->size(); i++){
-            flightBST.insert((*flightsRef)[i]);
-        }
+    // CHECK CONFLICT
+    if (checkConflict(aircraftID, date, depTime)) {
+      cout
+          << Colors::BOLD << Colors::BRIGHT_RED
+          << "\n[-] CONFLICT DETECTED! AIRCRAFT ALREADY SCHEDULED AT THIS TIME!"
+          << Colors::RESET << endl;
+      return;
     }
 
-    void addFlight(){
-        std::string aircraftID, origin, dest, depTime, arrTime, date, status;
-        int capacity;
+    string newID = generateFlightID();
+    Flight newFlight(newID, aircraftID, origin, dest, depTime, arrTime, date,
+                     capacity, 0, "SCHEDULED");
 
-        std::cout << "\n===== ADD NEW FLIGHT =====\n";
-        
-        // SHOW AVAILABLE AIRCRAFT
-        std::cout << "AVAILABLE AIRCRAFT:\n";
-        for(int i = 0; i < aircraftsRef->size(); i++){
-            std::cout << (*aircraftsRef)[i].getAircraftID() << " - " 
-                      << (*aircraftsRef)[i].getModel() << " (Capacity: " 
-                      << (*aircraftsRef)[i].getCapacity() << ")" << std::endl;
-        }
+    // PUSH TO UNDO STACK (MARK AS ADDED FOR UNDO LOGIC)
+    Flight undoFlight = newFlight;
+    undoFlight.setStatus("UNDO_ADD"); // INTERNAL FLAG
+    undoStack.push(undoFlight);
 
-        std::cin.ignore();
-        std::cout << "ENTER AIRCRAFT ID: ";
-        std::getline(std::cin, aircraftID);
+    flightsRef->push_back(newFlight);
+    flightBST.insert(newFlight);
 
-        // FIND AIRCRAFT CAPACITY
-        capacity = 0;
-        for(int i = 0; i < aircraftsRef->size(); i++){
-            if((*aircraftsRef)[i].getAircraftID() == aircraftID){
-                capacity = (*aircraftsRef)[i].getCapacity();
-                break;
-            }
-        }
+    activityLog.insertEnd("Added Flight: " + newID, getCurrentTimestamp());
 
-        if(capacity == 0){
-            std::cout << "INVALID AIRCRAFT ID!" << std::endl;
-            return;
-        }
+    cout << Colors::BOLD << Colors::BRIGHT_GREEN
+         << "\n[+] FLIGHT ADDED SUCCESSFULLY! FLIGHT ID: " << newID
+         << Colors::RESET << endl;
+  }
 
-        std::cout << "ENTER ORIGIN (AIRPORT CODE): ";
-        std::getline(std::cin, origin);
-        std::cout << "ENTER DESTINATION (AIRPORT CODE): ";
-        std::getline(std::cin, dest);
-        std::cout << "ENTER DEPARTURE TIME (HH:MM): ";
-        std::getline(std::cin, depTime);
-        std::cout << "ENTER ARRIVAL TIME (HH:MM): ";
-        std::getline(std::cin, arrTime);
-        std::cout << "ENTER DATE (DD-MM-YYYY): ";
-        std::getline(std::cin, date);
+  // updates details of an existing flight
+  void updateFlight() {
+    string flightID;
+    cin.ignore();
+    cout << Colors::BOLD << "\nENTER FLIGHT ID TO UPDATE: " << Colors::RESET;
+    getline(cin, flightID);
 
-        // CHECK CONFLICT
-        if(checkConflict(aircraftID, date, depTime)){
-            std::cout << "\nCONFLICT DETECTED! AIRCRAFT ALREADY SCHEDULED AT THIS TIME!" << std::endl;
-            return;
-        }
-
-        std::string newID = generateFlightID();
-        Flight newFlight(newID, aircraftID, origin, dest, depTime, arrTime, 
-                        date, capacity, 0, "SCHEDULED");
-
-        // PUSH TO UNDO STACK (SAVE CURRENT STATE)
-        undoStack.push(newFlight);
-
-        flightsRef->push_back(newFlight);
-        flightBST.insert(newFlight);
-
-        activityLog.insertEnd("Added Flight: " + newID, getCurrentTimestamp());
-
-        std::cout << "\nFLIGHT ADDED SUCCESSFULLY! FLIGHT ID: " << newID << std::endl;
+    Flight *flight = flightBST.search(flightID);
+    if (flight == nullptr) {
+      cout << Colors::BOLD << Colors::BRIGHT_RED << "[-] FLIGHT NOT FOUND!"
+           << Colors::RESET << endl;
+      return;
     }
 
-    void updateFlight(){
-        std::string flightID;
-        std::cin.ignore();
-        std::cout << "\nENTER FLIGHT ID TO UPDATE: ";
-        std::getline(std::cin, flightID);
+    // SAVE TO UNDO STACK
+    undoStack.push(*flight);
 
-        Flight* flight = flightBST.search(flightID);
-        if(flight == nullptr){
-            std::cout << "FLIGHT NOT FOUND!" << std::endl;
-            return;
-        }
+    cout << Colors::BOLD << Colors::BRIGHT_CYAN << "\n===== UPDATE FLIGHT "
+         << flightID << " =====\n"
+         << Colors::RESET;
+    cout << "   [1] UPDATE DEPARTURE TIME\n";
+    cout << "   [2] UPDATE ARRIVAL TIME\n";
+    cout << "   [3] UPDATE DATE\n";
+    cout << "   [4] UPDATE STATUS\n";
+    cout << Colors::BOLD << Colors::YELLOW
+         << "   > Enter choice: " << Colors::RESET;
 
-        // SAVE TO UNDO STACK
-        undoStack.push(*flight);
+    int choice;
+    cin >> choice;
+    cin.ignore();
 
-        std::cout << "\n===== UPDATE FLIGHT " << flightID << " =====\n";
-        std::cout << "1. UPDATE DEPARTURE TIME\n";
-        std::cout << "2. UPDATE ARRIVAL TIME\n";
-        std::cout << "3. UPDATE DATE\n";
-        std::cout << "4. UPDATE STATUS\n";
-        std::cout << "ENTER CHOICE: ";
-        
-        int choice;
-        std::cin >> choice;
-        std::cin.ignore();
-
-        std::string newValue;
-        switch(choice){
-            case 1:
-                std::cout << "ENTER NEW DEPARTURE TIME (HH:MM): ";
-                std::getline(std::cin, newValue);
-                flight->setDepartureTime(newValue);
-                break;
-            case 2:
-                std::cout << "ENTER NEW ARRIVAL TIME (HH:MM): ";
-                std::getline(std::cin, newValue);
-                flight->setArrivalTime(newValue);
-                break;
-            case 3:
-                std::cout << "ENTER NEW DATE (DD-MM-YYYY): ";
-                std::getline(std::cin, newValue);
-                flight->setDate(newValue);
-                break;
-            case 4:
-                std::cout << "ENTER NEW STATUS (SCHEDULED/DELAYED/CANCELLED/COMPLETED): ";
-                std::getline(std::cin, newValue);
-                flight->setStatus(newValue);
-                break;
-            default:
-                std::cout << "INVALID CHOICE!" << std::endl;
-                return;
-        }
-
-        // UPDATE IN VECTOR
-        for(int i = 0; i < flightsRef->size(); i++){
-            if((*flightsRef)[i].getFlightID() == flightID){
-                (*flightsRef)[i] = *flight;
-                break;
-            }
-        }
-
-        activityLog.insertEnd("Updated Flight: " + flightID, getCurrentTimestamp());
-        std::cout << "\nFLIGHT UPDATED SUCCESSFULLY!" << std::endl;
+    string newValue;
+    switch (choice) {
+    case 1:
+      cout << Colors::BOLD
+           << "ENTER NEW DEPARTURE TIME (HH:MM): " << Colors::RESET;
+      getline(cin, newValue);
+      flight->setDepartureTime(newValue);
+      break;
+    case 2:
+      cout << Colors::BOLD
+           << "ENTER NEW ARRIVAL TIME (HH:MM): " << Colors::RESET;
+      getline(cin, newValue);
+      flight->setArrivalTime(newValue);
+      break;
+    case 3:
+      cout << Colors::BOLD << "ENTER NEW DATE (DD-MM-YYYY): " << Colors::RESET;
+      getline(cin, newValue);
+      flight->setDate(newValue);
+      break;
+    case 4:
+      cout << Colors::BOLD
+           << "ENTER NEW STATUS (SCHEDULED/DELAYED/CANCELLED/COMPLETED): "
+           << Colors::RESET;
+      getline(cin, newValue);
+      flight->setStatus(newValue);
+      break;
+    default:
+      cout << Colors::BOLD << Colors::BRIGHT_RED << "[-] INVALID CHOICE!"
+           << Colors::RESET << endl;
+      return;
     }
 
-    void deleteFlight(){
-        std::string flightID;
-        std::cin.ignore();
-        std::cout << "\nENTER FLIGHT ID TO DELETE: ";
-        std::getline(std::cin, flightID);
-
-        Flight* flight = flightBST.search(flightID);
-        if(flight == nullptr){
-            std::cout << "FLIGHT NOT FOUND!" << std::endl;
-            return;
-        }
-
-        // SAVE TO UNDO STACK
-        undoStack.push(*flight);
-
-        // DELETE FROM VECTOR
-        for(int i = 0; i < flightsRef->size(); i++){
-            if((*flightsRef)[i].getFlightID() == flightID){
-                flightsRef->erase(flightsRef->begin() + i);
-                break;
-            }
-        }
-
-        activityLog.insertEnd("Deleted Flight: " + flightID, getCurrentTimestamp());
-        std::cout << "\nFLIGHT DELETED SUCCESSFULLY!" << std::endl;
+    // UPDATE IN VECTOR
+    for (int i = 0; i < flightsRef->size(); i++) {
+      if ((*flightsRef)[i].getFlightID() == flightID) {
+        (*flightsRef)[i] = *flight;
+        break;
+      }
     }
 
-    void displayAllFlights(){
-        if(flightsRef->empty()){
-            std::cout << "\nNO FLIGHTS IN SYSTEM!" << std::endl;
-            return;
-        }
+    activityLog.insertEnd("Updated Flight: " + flightID, getCurrentTimestamp());
+    cout << Colors::BOLD << Colors::BRIGHT_GREEN
+         << "\n[+] FLIGHT UPDATED SUCCESSFULLY!" << Colors::RESET << endl;
+  }
 
-        std::cout << "\n========== ALL FLIGHTS ==========\n";
-        for(int i = 0; i < flightsRef->size(); i++){
-            Flight& f = (*flightsRef)[i];
-            std::cout << "\nFLIGHT ID: " << f.getFlightID()
-                      << "\nAIRCRAFT: " << f.getAircraftID()
-                      << "\nROUTE: " << f.getOrigin() << " -> " << f.getDestination()
-                      << "\nDEPARTURE: " << f.getDepartureTime() << " | ARRIVAL: " << f.getArrivalTime()
-                      << "\nDATE: " << f.getDate()
-                      << "\nSEATS: " << f.getBookedSeats() << "/" << f.getCapacity()
-                      << "\nSTATUS: " << f.getStatus() << std::endl;
-            std::cout << "--------------------------------" << std::endl;
-        }
-        std::cout << "=================================\n";
+  // removes a flight from the system
+  void deleteFlight() {
+    string flightID;
+    cin.ignore();
+    cout << Colors::BOLD << "\nENTER FLIGHT ID TO DELETE: " << Colors::RESET;
+    getline(cin, flightID);
+
+    Flight *flight = flightBST.search(flightID);
+    if (flight == nullptr) {
+      cout << Colors::BOLD << Colors::BRIGHT_RED << "[-] FLIGHT NOT FOUND!"
+           << Colors::RESET << endl;
+      return;
     }
 
-    void searchFlightByID(){
-        std::string flightID;
-        std::cin.ignore();
-        std::cout << "\nENTER FLIGHT ID: ";
-        std::getline(std::cin, flightID);
+    // SAVE TO UNDO STACK
+    undoStack.push(*flight);
 
-        Flight* flight = flightBST.search(flightID);
-        if(flight == nullptr){
-            std::cout << "FLIGHT NOT FOUND!" << std::endl;
-            return;
-        }
-
-        std::cout << "\n===== FLIGHT DETAILS =====\n";
-        std::cout << "FLIGHT ID: " << flight->getFlightID()
-                  << "\nAIRCRAFT: " << flight->getAircraftID()
-                  << "\nROUTE: " << flight->getOrigin() << " -> " << flight->getDestination()
-                  << "\nDEPARTURE: " << flight->getDepartureTime() 
-                  << " | ARRIVAL: " << flight->getArrivalTime()
-                  << "\nDATE: " << flight->getDate()
-                  << "\nSEATS: " << flight->getBookedSeats() << "/" << flight->getCapacity()
-                  << "\nSTATUS: " << flight->getStatus() << std::endl;
-        std::cout << "==========================\n";
+    // DELETE FROM VECTOR
+    for (int i = 0; i < flightsRef->size(); i++) {
+      if ((*flightsRef)[i].getFlightID() == flightID) {
+        flightsRef->erase(flightsRef->begin() + i);
+        break;
+      }
     }
 
-    void changeFlightStatus(){
-        std::string flightID, newStatus;
-        std::cin.ignore();
-        std::cout << "\nENTER FLIGHT ID: ";
-        std::getline(std::cin, flightID);
+    // DELETE FROM BST
+    flightBST.remove(flightID);
 
-        Flight* flight = flightBST.search(flightID);
-        if(flight == nullptr){
-            std::cout << "FLIGHT NOT FOUND!" << std::endl;
-            return;
-        }
+    activityLog.insertEnd("Deleted Flight: " + flightID, getCurrentTimestamp());
+    cout << Colors::BOLD << Colors::BRIGHT_GREEN
+         << "\n[+] FLIGHT DELETED SUCCESSFULLY!" << Colors::RESET << endl;
+  }
 
-        std::cout << "CURRENT STATUS: " << flight->getStatus() << std::endl;
-        std::cout << "ENTER NEW STATUS (SCHEDULED/DELAYED/CANCELLED/COMPLETED): ";
-        std::getline(std::cin, newStatus);
-
-        flight->setStatus(newStatus);
-
-        // UPDATE IN VECTOR
-        for(int i = 0; i < flightsRef->size(); i++){
-            if((*flightsRef)[i].getFlightID() == flightID){
-                (*flightsRef)[i].setStatus(newStatus);
-                break;
-            }
-        }
-
-        activityLog.insertEnd("Changed Status of Flight " + flightID + " to " + newStatus, 
-                            getCurrentTimestamp());
-        std::cout << "\nSTATUS UPDATED SUCCESSFULLY!" << std::endl;
+  // displays all flights in the system
+  void displayAllFlights() {
+    if (flightsRef->empty()) {
+      cout << Colors::BOLD << Colors::BRIGHT_RED
+           << "\n[-] NO FLIGHTS IN SYSTEM!" << Colors::RESET << endl;
+      return;
     }
 
-    void undoLastAction(){
-        if(undoStack.isEmpty()){
-            std::cout << "\nNO ACTIONS TO UNDO!" << std::endl;
-            return;
-        }
+    cout << Colors::BOLD << Colors::BRIGHT_CYAN
+         << "\n========== ALL FLIGHTS ==========\n"
+         << Colors::RESET;
+    for (int i = 0; i < flightsRef->size(); i++) {
+      Flight &f = (*flightsRef)[i];
+      cout << Colors::BRIGHT_GREEN << "\n[FLIGHT] " << f.getFlightID()
+           << Colors::RESET << " | Aircraft: " << f.getAircraftID()
+           << " | Route: " << f.getOrigin() << " > " << f.getDestination()
+           << "\n         Departure: " << f.getDepartureTime()
+           << " | Arrival: " << f.getArrivalTime()
+           << "\n         Date: " << f.getDate()
+           << " | Seats: " << f.getBookedSeats() << "/" << f.getCapacity()
+           << " | Status: " << f.getStatus() << endl;
+      cout << "--------------------------------" << endl;
+    }
+    cout << Colors::BOLD << Colors::BRIGHT_CYAN
+         << "=================================\n"
+         << Colors::RESET;
+  }
 
-        Flight lastFlight = undoStack.pop();
-        std::cout << "\nUNDO: RESTORING FLIGHT " << lastFlight.getFlightID() << std::endl;
+  // searches for flights by route (origin and destination)
+  void searchFlightsByRoute() {
+    string origin, destination;
+    cin.ignore();
 
-        // RESTORE FLIGHT
-        bool found = false;
-        for(int i = 0; i < flightsRef->size(); i++){
-            if((*flightsRef)[i].getFlightID() == lastFlight.getFlightID()){
-                (*flightsRef)[i] = lastFlight;
-                found = true;
-                break;
-            }
-        }
+    cout << "\n===== SEARCH FLIGHTS BY ROUTE =====\n";
+    cout << "ENTER DEPARTURE CITY (AIRPORT CODE): ";
+    getline(cin, origin);
+    cout << "ENTER DESTINATION CITY (AIRPORT CODE): ";
+    getline(cin, destination);
 
-        if(!found){
-            flightsRef->push_back(lastFlight);
-        }
-
-        activityLog.insertEnd("Undo Action", getCurrentTimestamp());
-        std::cout << "UNDO SUCCESSFUL!" << std::endl;
+    vector<Flight> matchingFlights;
+    for (int i = 0; i < flightsRef->size(); i++) {
+      Flight &f = (*flightsRef)[i];
+      if (f.getOrigin() == origin && f.getDestination() == destination) {
+        matchingFlights.push_back(f);
+      }
     }
 
-    void viewActivityLog(){
-        activityLog.displayAll();
+    if (matchingFlights.empty()) {
+      cout << "\n[-] NO FLIGHTS FOUND FOR ROUTE " << origin << " > "
+           << destination << endl;
+      return;
     }
+
+    cout << "\n========== AVAILABLE FLIGHTS: " << origin << " > " << destination
+         << " ==========\n";
+    for (int i = 0; i < matchingFlights.size(); i++) {
+      Flight &f = matchingFlights[i];
+      int availableSeats = f.getCapacity() - f.getBookedSeats();
+      cout << "\n"
+           << (i + 1) << ". FLIGHT ID: " << f.getFlightID()
+           << "\n   AIRCRAFT: " << f.getAircraftID()
+           << "\n   DEPARTURE: " << f.getDepartureTime()
+           << " | ARRIVAL: " << f.getArrivalTime()
+           << "\n   DATE: " << f.getDate()
+           << "\n   AVAILABLE SEATS: " << availableSeats << "/"
+           << f.getCapacity() << "\n   STATUS: " << f.getStatus() << endl;
+      cout << "   --------------------------------" << endl;
+    }
+    cout << "====================================================\n";
+  }
+
+  // searches for a flight by its id
+  void searchFlightByID() {
+    string flightID;
+    cin.ignore();
+    cout << "\nENTER FLIGHT ID: ";
+    getline(cin, flightID);
+
+    Flight *flight = flightBST.search(flightID);
+    if (flight == nullptr) {
+      cout << "FLIGHT NOT FOUND!" << endl;
+      return;
+    }
+
+    cout << "\n===== FLIGHT DETAILS =====\n";
+    cout << "   Flight ID: " << flight->getFlightID()
+         << "\n   Aircraft: " << flight->getAircraftID()
+         << "\n   Route: " << flight->getOrigin() << " > "
+         << flight->getDestination()
+         << "\n   Departure: " << flight->getDepartureTime()
+         << " | Arrival: " << flight->getArrivalTime()
+         << "\n   Date: " << flight->getDate()
+         << "\n   Seats: " << flight->getBookedSeats() << "/"
+         << flight->getCapacity() << " | Status: " << flight->getStatus()
+         << endl;
+    cout << "==========================\n";
+  }
+
+  // changes the status of a specific flight
+  void changeFlightStatus() {
+    string flightID, newStatus;
+    cin.ignore();
+    cout << "\nENTER FLIGHT ID: ";
+    getline(cin, flightID);
+
+    Flight *flight = flightBST.search(flightID);
+    if (flight == nullptr) {
+      cout << "FLIGHT NOT FOUND!" << endl;
+      return;
+    }
+
+    cout << "CURRENT STATUS: " << flight->getStatus() << endl;
+    cout << "ENTER NEW STATUS (SCHEDULED/DELAYED/CANCELLED/COMPLETED): ";
+    getline(cin, newStatus);
+
+    flight->setStatus(newStatus);
+
+    // UPDATE IN VECTOR
+    for (int i = 0; i < flightsRef->size(); i++) {
+      if ((*flightsRef)[i].getFlightID() == flightID) {
+        (*flightsRef)[i].setStatus(newStatus);
+        break;
+      }
+    }
+
+    activityLog.insertEnd("Changed Status of Flight " + flightID + " to " +
+                              newStatus,
+                          getCurrentTimestamp());
+    cout << "\nSTATUS UPDATED SUCCESSFULLY!" << endl;
+  }
+
+  // undoes the last add or update action
+  void undoLastAction() {
+    if (undoStack.isEmpty()) {
+      cout << "\nNO ACTIONS TO UNDO!" << endl;
+      return;
+    }
+
+    Flight lastFlight = undoStack.pop();
+    string flightID = lastFlight.getFlightID();
+
+    if (lastFlight.getStatus() == "UNDO_ADD") {
+      // UNDO AN ADDITION = DELETE
+      for (int i = 0; i < flightsRef->size(); i++) {
+        if ((*flightsRef)[i].getFlightID() == flightID) {
+          flightsRef->erase(flightsRef->begin() + i);
+          break;
+        }
+      }
+      flightBST.remove(flightID);
+      cout << "\nUNDO: REMOVED ADDED FLIGHT " << flightID << endl;
+    } else {
+      // UNDO AN UPDATE OR DELETE = RESTORE
+      cout << "\nUNDO: RESTORING FLIGHT " << flightID << endl;
+      bool found = false;
+      for (int i = 0; i < flightsRef->size(); i++) {
+        if ((*flightsRef)[i].getFlightID() == flightID) {
+          (*flightsRef)[i] = lastFlight;
+          found = true;
+          break;
+        }
+      }
+      if (!found) {
+        flightsRef->push_back(lastFlight);
+      }
+      // UPDATE BST (REMOVE OLD AND RE-INSERT TO RE-BALANCE OR OVERWRITE)
+      flightBST.remove(flightID);
+      flightBST.insert(lastFlight);
+    }
+
+    activityLog.insertEnd("Undo Action", getCurrentTimestamp());
+    cout << "UNDO SUCCESSFUL!" << endl;
+  }
+
+  // displays the system activity log
+  void viewActivityLog() { activityLog.displayAll(); }
 };
 
 #endif

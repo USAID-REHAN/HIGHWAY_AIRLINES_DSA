@@ -3,44 +3,56 @@
 
 #include <string>
 
-class Booking{
-    private:
-    std::string bookingID;
-    std::string passengerID;
-    std::string flightID;
-    std::string seatNumber;
-    std::string bookingStatus; // CONFIRMED, WAITLIST, CANCELLED
+using namespace std;
 
-    public:
-    Booking(){
-        bookingID = "";
-        passengerID = "";
-        flightID = "";
-        seatNumber = "";
-        bookingStatus = "CONFIRMED";
-    }
+class Booking {
+private:
+  string bookingID;
+  string passengerID;
+  string flightID;
+  string seatNumber;
+  string bookingStatus; // CONFIRMED, WAITLIST, CANCELLED
 
-    Booking(std::string bID, std::string pID, std::string fID, std::string seat, std::string status){
-        bookingID = bID;
-        passengerID = pID;
-        flightID = fID;
-        seatNumber = seat;
-        bookingStatus = status;
-    }
+public:
+  // default constructor for booking
+  Booking() {
+    bookingID = "";
+    passengerID = "";
+    flightID = "";
+    seatNumber = "";
+    bookingStatus = "CONFIRMED";
+  }
 
-    // SETTERS
-    void setBookingID(std::string bID){ bookingID = bID; }
-    void setPassengerID(std::string pID){ passengerID = pID; }
-    void setFlightID(std::string fID){ flightID = fID; }
-    void setSeatNumber(std::string seat){ seatNumber = seat; }
-    void setBookingStatus(std::string status){ bookingStatus = status; }
+  // parameterized constructor for booking
+  Booking(string bID, string pID, string fID, string seat, string status) {
+    bookingID = bID;
+    passengerID = pID;
+    flightID = fID;
+    seatNumber = seat;
+    bookingStatus = status;
+  }
 
-    // GETTERS
-    std::string getBookingID() const { return bookingID; }
-    std::string getPassengerID() const { return passengerID; }
-    std::string getFlightID() const { return flightID; }
-    std::string getSeatNumber() const { return seatNumber; }
-    std::string getBookingStatus() const { return bookingStatus; }
+  // sets the booking id
+  void setBookingID(string bID) { bookingID = bID; }
+  // sets the passenger id
+  void setPassengerID(string pID) { passengerID = pID; }
+  // sets the flight id
+  void setFlightID(string fID) { flightID = fID; }
+  // sets the seat number
+  void setSeatNumber(string seat) { seatNumber = seat; }
+  // sets the booking status
+  void setBookingStatus(string status) { bookingStatus = status; }
+
+  // returns the booking id
+  string getBookingID() const { return bookingID; }
+  // returns the passenger id
+  string getPassengerID() const { return passengerID; }
+  // returns the flight id
+  string getFlightID() const { return flightID; }
+  // returns the seat number
+  string getSeatNumber() const { return seatNumber; }
+  // returns the booking status
+  string getBookingStatus() const { return bookingStatus; }
 };
 
 #endif

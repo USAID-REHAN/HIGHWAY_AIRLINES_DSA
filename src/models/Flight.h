@@ -3,74 +3,97 @@
 
 #include <string>
 
-class Flight{
-    private:
-    std::string flightID;
-    std::string aircraftID;
-    std::string origin;
-    std::string destination;
-    std::string departureTime; // FORMAT: HH:MM
-    std::string arrivalTime;   // FORMAT: HH:MM
-    std::string date;          // FORMAT: DD-MM-YYYY
-    int capacity;
-    int bookedSeats;
-    std::string status; // SCHEDULED, DELAYED, CANCELLED, COMPLETED
+using namespace std;
 
-    public:
-    Flight(){
-        flightID = "";
-        aircraftID = "";
-        origin = "";
-        destination = "";
-        departureTime = "";
-        arrivalTime = "";
-        date = "";
-        capacity = 0;
-        bookedSeats = 0;
-        status = "SCHEDULED";
-    }
+class Flight {
+private:
+  string flightID;
+  string aircraftID;
+  string origin;
+  string destination;
+  string departureTime; // FORMAT: HH:MM
+  string arrivalTime;   // FORMAT: HH:MM
+  string date;          // FORMAT: DD-MM-YYYY
+  int capacity;
+  int bookedSeats;
+  string status; // SCHEDULED, DELAYED, CANCELLED, COMPLETED
 
-    Flight(std::string id, std::string aircraft, std::string orig, std::string dest,
-           std::string depTime, std::string arrTime, std::string d, int cap, int booked, std::string stat){
-        flightID = id;
-        aircraftID = aircraft;
-        origin = orig;
-        destination = dest;
-        departureTime = depTime;
-        arrivalTime = arrTime;
-        date = d;
-        capacity = cap;
-        bookedSeats = booked;
-        status = stat;
-    }
+public:
+  // default constructor for flight
+  Flight() {
+    flightID = "";
+    aircraftID = "";
+    origin = "";
+    destination = "";
+    departureTime = "";
+    arrivalTime = "";
+    date = "";
+    capacity = 0;
+    bookedSeats = 0;
+    status = "SCHEDULED";
+  }
 
-    // SETTERS
-    void setFlightID(std::string id){ flightID = id; }
-    void setAircraftID(std::string aircraft){ aircraftID = aircraft; }
-    void setOrigin(std::string orig){ origin = orig; }
-    void setDestination(std::string dest){ destination = dest; }
-    void setDepartureTime(std::string depTime){ departureTime = depTime; }
-    void setArrivalTime(std::string arrTime){ arrivalTime = arrTime; }
-    void setDate(std::string d){ date = d; }
-    void setCapacity(int cap){ capacity = cap; }
-    void setBookedSeats(int booked){ bookedSeats = booked; }
-    void setStatus(std::string stat){ status = stat; }
+  // parameterized constructor for flight
+  Flight(string id, string aircraft, string orig, string dest, string depTime,
+         string arrTime, string d, int cap, int booked, string stat) {
+    flightID = id;
+    aircraftID = aircraft;
+    origin = orig;
+    destination = dest;
+    departureTime = depTime;
+    arrivalTime = arrTime;
+    date = d;
+    capacity = cap;
+    bookedSeats = booked;
+    status = stat;
+  }
 
-    // GETTERS
-    std::string getFlightID() const { return flightID; }
-    std::string getAircraftID() const { return aircraftID; }
-    std::string getOrigin() const { return origin; }
-    std::string getDestination() const { return destination; }
-    std::string getDepartureTime() const { return departureTime; }
-    std::string getArrivalTime() const { return arrivalTime; }
-    std::string getDate() const { return date; }
-    int getCapacity() const { return capacity; }
-    int getBookedSeats() const { return bookedSeats; }
-    std::string getStatus() const { return status; }
+  // sets the flight id
+  void setFlightID(string id) { flightID = id; }
+  // sets the aircraft id
+  void setAircraftID(string aircraft) { aircraftID = aircraft; }
+  // sets the origin airport
+  void setOrigin(string orig) { origin = orig; }
+  // sets the destination airport
+  void setDestination(string dest) { destination = dest; }
+  // sets the departure time
+  void setDepartureTime(string depTime) { departureTime = depTime; }
+  // sets the arrival time
+  void setArrivalTime(string arrTime) { arrivalTime = arrTime; }
+  // sets the flight date
+  void setDate(string d) { date = d; }
+  // sets the total capacity
+  void setCapacity(int cap) { capacity = cap; }
+  // sets the number of booked seats
+  void setBookedSeats(int booked) { bookedSeats = booked; }
+  // sets the flight status
+  void setStatus(string stat) { status = stat; }
 
-    // UTILITY
-    bool isFull() const { return bookedSeats >= capacity; }
-    int getAvailableSeats() const { return capacity - bookedSeats; }
+  // returns the flight id
+  string getFlightID() const { return flightID; }
+  // returns the aircraft id
+  string getAircraftID() const { return aircraftID; }
+  // returns the origin airport
+  string getOrigin() const { return origin; }
+  // returns the destination airport
+  string getDestination() const { return destination; }
+  // returns the departure time
+  string getDepartureTime() const { return departureTime; }
+  // returns the arrival time
+  string getArrivalTime() const { return arrivalTime; }
+  // returns the flight date
+  string getDate() const { return date; }
+  // returns the total capacity
+  int getCapacity() const { return capacity; }
+  // returns the number of booked seats
+  int getBookedSeats() const { return bookedSeats; }
+  // returns the flight status
+  string getStatus() const { return status; }
+
+  // checks if the flight is full
+  bool isFull() const { return bookedSeats >= capacity; }
+  // returns the number of available seats
+  int getAvailableSeats() const { return capacity - bookedSeats; }
 };
 
 #endif

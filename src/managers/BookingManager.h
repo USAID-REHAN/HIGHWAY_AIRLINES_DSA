@@ -1,244 +1,271 @@
 #ifndef BOOKINGMANAGER_H
 #define BOOKINGMANAGER_H
 
-#include <vector>
-#include <iostream>
-#include <string>
+#include "../CLI/Colors.h"
+#include "../ds/PriorityQueue.h"
+#include "../ds/Queue.h"
 #include "../models/Booking.h"
 #include "../models/Flight.h"
 #include "../models/Passenger.h"
-#include "../ds/Queue.h"
-#include "../ds/PriorityQueue.h"
+#include <iostream>
+#include <string>
+#include <vector>
 
-class BookingManager{
-    private:
-    std::vector<Booking>* bookingsRef;
-    std::vector<Flight>* flightsRef;
-    std::vector<Passenger>* passengersRef;
-    Queue waitlistQueue;
-    PriorityQueue boardingQueue;
+using namespace std;
 
-    std::string generateBookingID(){
-        int maxID = 0;
-        for(int i = 0; i < bookingsRef->size(); i++){
-            std::string id = (*bookingsRef)[i].getBookingID();
-            if(id.length() > 1){
-                int numID = std::stoi(id.substr(1));
-                if(numID > maxID){
-                    maxID = numID;
-                }
-            }
+class BookingManager {
+private:
+  vector<Booking> *bookingsRef;
+  vector<Flight> *flightsRef;
+  vector<Passenger> *passengersRef;
+  Queue waitlistQueue;
+  PriorityQueue boardingQueue;
+
+  // generates a unique booking id
+  string generateBookingID() {
+    int maxID = 0;
+    for (int i = 0; i < bookingsRef->size(); i++) {
+      string id = (*bookingsRef)[i].getBookingID();
+      if (id.length() > 1) {
+        int numID = stoi(id.substr(1));
+        if (numID > maxID) {
+          maxID = numID;
         }
-        maxID++;
-        return "B" + std::to_string(maxID);
+      }
+    }
+    maxID++;
+    return "B" + to_string(maxID);
+  }
+
+  // generates a seat number based on index
+  string generateSeatNumber(int seatNum) {
+    char row = 'A' + (seatNum / 6);
+    int col = (seatNum % 6) + 1;
+    return string(1, row) + to_string(col);
+  }
+
+  // helper to find a flight by its id
+  Flight *findFlight(string flightID) {
+    for (int i = 0; i < flightsRef->size(); i++) {
+      if ((*flightsRef)[i].getFlightID() == flightID) {
+        return &(*flightsRef)[i];
+      }
+    }
+    return nullptr;
+  }
+
+  // helper to find a passenger by their id
+  Passenger *findPassenger(string passengerID) {
+    for (int i = 0; i < passengersRef->size(); i++) {
+      if ((*passengersRef)[i].getPassengerID() == passengerID) {
+        return &(*passengersRef)[i];
+      }
+    }
+    return nullptr;
+  }
+
+public:
+  // constructor for booking manager
+  BookingManager(vector<Booking> *bookings, vector<Flight> *flights,
+                 vector<Passenger> *passengers) {
+    bookingsRef = bookings;
+    flightsRef = flights;
+    passengersRef = passengers;
+  }
+
+  // handles the flight booking process for a passenger
+  void bookFlight(string passengerID) {
+    string flightID;
+    cin.ignore();
+    cout << Colors::BOLD << "\nENTER FLIGHT ID TO BOOK: " << Colors::RESET;
+    getline(cin, flightID);
+
+    Flight *flight = findFlight(flightID);
+    if (flight == nullptr) {
+      cout << Colors::BOLD << Colors::BRIGHT_RED << "[-] FLIGHT NOT FOUND!"
+           << Colors::RESET << endl;
+      return;
     }
 
-    std::string generateSeatNumber(int seatNum){
-        char row = 'A' + (seatNum / 6);
-        int col = (seatNum % 6) + 1;
-        return std::string(1, row) + std::to_string(col);
+    // check if already booked
+    for (int i = 0; i < bookingsRef->size(); i++) {
+      if ((*bookingsRef)[i].getPassengerID() == passengerID &&
+          (*bookingsRef)[i].getFlightID() == flightID &&
+          (*bookingsRef)[i].getBookingStatus() != "CANCELLED") {
+        cout << Colors::BOLD << Colors::BRIGHT_RED
+             << "\n[-] YOU HAVE ALREADY BOOKED THIS FLIGHT!" << Colors::RESET
+             << endl;
+        return;
+      }
     }
 
-    Flight* findFlight(std::string flightID){
-        for(int i = 0; i < flightsRef->size(); i++){
-            if((*flightsRef)[i].getFlightID() == flightID){
-                return &(*flightsRef)[i];
-            }
+    string bookingID = generateBookingID();
+
+    if (flight->isFull()) {
+      // add to waitlist
+      waitlistQueue.enqueue(passengerID, flightID);
+      Booking newBooking(bookingID, passengerID, flightID, "WAITLIST",
+                         "WAITLIST");
+      bookingsRef->push_back(newBooking);
+      cout << Colors::BOLD << Colors::BRIGHT_YELLOW
+           << "\n[!] FLIGHT IS FULL! ADDED TO WAITLIST." << Colors::RESET
+           << endl;
+      cout << "BOOKING ID: " << bookingID << endl;
+    } else {
+      // confirm booking
+      string seatNumber = generateSeatNumber(flight->getBookedSeats());
+      Booking newBooking(bookingID, passengerID, flightID, seatNumber,
+                         "CONFIRMED");
+      bookingsRef->push_back(newBooking);
+
+      flight->setBookedSeats(flight->getBookedSeats() + 1);
+
+      // update flight in vector
+      for (int i = 0; i < flightsRef->size(); i++) {
+        if ((*flightsRef)[i].getFlightID() == flightID) {
+          (*flightsRef)[i].setBookedSeats(flight->getBookedSeats());
+          break;
         }
-        return nullptr;
+      }
+
+      // add to boarding priority queue
+      Passenger *passenger = findPassenger(passengerID);
+      if (passenger != nullptr) {
+        boardingQueue.insert(*passenger);
+      }
+
+      cout << Colors::BOLD << Colors::BRIGHT_GREEN << "\n[+] BOOKING CONFIRMED!"
+           << Colors::RESET << endl;
+      cout << "BOOKING ID: " << bookingID << endl;
+      cout << "SEAT NUMBER: " << seatNumber << endl;
+    }
+  }
+
+  // cancels a booking for a passenger
+  void cancelBooking(string passengerID) {
+    string bookingID;
+    cin.ignore();
+    cout << Colors::BOLD << "\nENTER BOOKING ID TO CANCEL: " << Colors::RESET;
+    getline(cin, bookingID);
+
+    Booking *booking = nullptr;
+    int bookingIndex = -1;
+
+    for (int i = 0; i < bookingsRef->size(); i++) {
+      if ((*bookingsRef)[i].getBookingID() == bookingID &&
+          (*bookingsRef)[i].getPassengerID() == passengerID) {
+        booking = &(*bookingsRef)[i];
+        bookingIndex = i;
+        break;
+      }
     }
 
-    Passenger* findPassenger(std::string passengerID){
-        for(int i = 0; i < passengersRef->size(); i++){
-            if((*passengersRef)[i].getPassengerID() == passengerID){
-                return &(*passengersRef)[i];
-            }
-        }
-        return nullptr;
+    if (booking == nullptr) {
+      cout << Colors::BOLD << Colors::BRIGHT_RED << "[-] BOOKING NOT FOUND!"
+           << Colors::RESET << endl;
+      return;
     }
 
-    public:
-    BookingManager(std::vector<Booking>* bookings, std::vector<Flight>* flights, 
-                   std::vector<Passenger>* passengers){
-        bookingsRef = bookings;
-        flightsRef = flights;
-        passengersRef = passengers;
+    if (booking->getBookingStatus() == "CANCELLED") {
+      cout << Colors::BOLD << Colors::BRIGHT_RED
+           << "[-] BOOKING ALREADY CANCELLED!" << Colors::RESET << endl;
+      return;
     }
 
-    void bookFlight(std::string passengerID){
-        std::string flightID;
-        std::cin.ignore();
-        std::cout << "\nENTER FLIGHT ID TO BOOK: ";
-        std::getline(std::cin, flightID);
+    string flightID = booking->getFlightID();
+    booking->setBookingStatus("CANCELLED");
 
-        Flight* flight = findFlight(flightID);
-        if(flight == nullptr){
-            std::cout << "FLIGHT NOT FOUND!" << std::endl;
-            return;
+    Flight *flight = findFlight(flightID);
+    if (flight != nullptr && booking->getBookingStatus() != "WAITLIST") {
+      flight->setBookedSeats(flight->getBookedSeats() - 1);
+
+      // update flight in vector
+      for (int i = 0; i < flightsRef->size(); i++) {
+        if ((*flightsRef)[i].getFlightID() == flightID) {
+          (*flightsRef)[i].setBookedSeats(flight->getBookedSeats());
+          break;
         }
+      }
 
-        // CHECK IF ALREADY BOOKED
-        for(int i = 0; i < bookingsRef->size(); i++){
-            if((*bookingsRef)[i].getPassengerID() == passengerID && 
-               (*bookingsRef)[i].getFlightID() == flightID &&
-               (*bookingsRef)[i].getBookingStatus() != "CANCELLED"){
-                std::cout << "\nYOU HAVE ALREADY BOOKED THIS FLIGHT!" << std::endl;
-                return;
-            }
-        }
+      // check waitlist and promote
+      QueueNode *waitlistPassenger = waitlistQueue.dequeueForFlight(flightID);
+      if (waitlistPassenger != nullptr) {
+        // find waitlist booking and confirm it
+        for (int i = 0; i < bookingsRef->size(); i++) {
+          if ((*bookingsRef)[i].getPassengerID() ==
+                  waitlistPassenger->passengerID &&
+              (*bookingsRef)[i].getFlightID() == flightID &&
+              (*bookingsRef)[i].getBookingStatus() == "WAITLIST") {
 
-        std::string bookingID = generateBookingID();
-
-        if(flight->isFull()){
-            // ADD TO WAITLIST
-            waitlistQueue.enqueue(passengerID, flightID);
-            Booking newBooking(bookingID, passengerID, flightID, "WAITLIST", "WAITLIST");
-            bookingsRef->push_back(newBooking);
-            std::cout << "\nFLIGHT IS FULL! ADDED TO WAITLIST." << std::endl;
-            std::cout << "BOOKING ID: " << bookingID << std::endl;
-        }
-        else{
-            // CONFIRM BOOKING
-            std::string seatNumber = generateSeatNumber(flight->getBookedSeats());
-            Booking newBooking(bookingID, passengerID, flightID, seatNumber, "CONFIRMED");
-            bookingsRef->push_back(newBooking);
+            string seatNumber = generateSeatNumber(flight->getBookedSeats());
+            (*bookingsRef)[i].setSeatNumber(seatNumber);
+            (*bookingsRef)[i].setBookingStatus("CONFIRMED");
 
             flight->setBookedSeats(flight->getBookedSeats() + 1);
 
-            // UPDATE FLIGHT IN VECTOR
-            for(int i = 0; i < flightsRef->size(); i++){
-                if((*flightsRef)[i].getFlightID() == flightID){
-                    (*flightsRef)[i].setBookedSeats(flight->getBookedSeats());
-                    break;
-                }
-            }
-
-            // ADD TO BOARDING PRIORITY QUEUE
-            Passenger* passenger = findPassenger(passengerID);
-            if(passenger != nullptr){
-                boardingQueue.insert(*passenger);
-            }
-
-            std::cout << "\nBOOKING CONFIRMED!" << std::endl;
-            std::cout << "BOOKING ID: " << bookingID << std::endl;
-            std::cout << "SEAT NUMBER: " << seatNumber << std::endl;
-        }
-    }
-
-    void cancelBooking(std::string passengerID){
-        std::string bookingID;
-        std::cin.ignore();
-        std::cout << "\nENTER BOOKING ID TO CANCEL: ";
-        std::getline(std::cin, bookingID);
-
-        Booking* booking = nullptr;
-        int bookingIndex = -1;
-
-        for(int i = 0; i < bookingsRef->size(); i++){
-            if((*bookingsRef)[i].getBookingID() == bookingID && 
-               (*bookingsRef)[i].getPassengerID() == passengerID){
-                booking = &(*bookingsRef)[i];
-                bookingIndex = i;
+            // update flight in vector
+            for (int j = 0; j < flightsRef->size(); j++) {
+              if ((*flightsRef)[j].getFlightID() == flightID) {
+                (*flightsRef)[j].setBookedSeats(flight->getBookedSeats());
                 break;
-            }
-        }
-
-        if(booking == nullptr){
-            std::cout << "BOOKING NOT FOUND!" << std::endl;
-            return;
-        }
-
-        if(booking->getBookingStatus() == "CANCELLED"){
-            std::cout << "BOOKING ALREADY CANCELLED!" << std::endl;
-            return;
-        }
-
-        std::string flightID = booking->getFlightID();
-        booking->setBookingStatus("CANCELLED");
-
-        Flight* flight = findFlight(flightID);
-        if(flight != nullptr && booking->getBookingStatus() != "WAITLIST"){
-            flight->setBookedSeats(flight->getBookedSeats() - 1);
-
-            // UPDATE FLIGHT IN VECTOR
-            for(int i = 0; i < flightsRef->size(); i++){
-                if((*flightsRef)[i].getFlightID() == flightID){
-                    (*flightsRef)[i].setBookedSeats(flight->getBookedSeats());
-                    break;
-                }
+              }
             }
 
-            // CHECK WAITLIST AND PROMOTE
-            QueueNode* waitlistPassenger = waitlistQueue.peek();
-            if(waitlistPassenger != nullptr && waitlistPassenger->flightID == flightID){
-                waitlistQueue.dequeue();
-
-                // FIND WAITLIST BOOKING AND CONFIRM IT
-                for(int i = 0; i < bookingsRef->size(); i++){
-                    if((*bookingsRef)[i].getPassengerID() == waitlistPassenger->passengerID && 
-                       (*bookingsRef)[i].getFlightID() == flightID &&
-                       (*bookingsRef)[i].getBookingStatus() == "WAITLIST"){
-                        
-                        std::string seatNumber = generateSeatNumber(flight->getBookedSeats());
-                        (*bookingsRef)[i].setSeatNumber(seatNumber);
-                        (*bookingsRef)[i].setBookingStatus("CONFIRMED");
-
-                        flight->setBookedSeats(flight->getBookedSeats() + 1);
-
-                        // UPDATE FLIGHT IN VECTOR
-                        for(int j = 0; j < flightsRef->size(); j++){
-                            if((*flightsRef)[j].getFlightID() == flightID){
-                                (*flightsRef)[j].setBookedSeats(flight->getBookedSeats());
-                                break;
-                            }
-                        }
-
-                        std::cout << "\nWAITLIST PASSENGER " << waitlistPassenger->passengerID 
-                                  << " PROMOTED TO CONFIRMED!" << std::endl;
-                        break;
-                    }
-                }
-                delete waitlistPassenger;
-            }
+            cout << Colors::BOLD << Colors::BRIGHT_GREEN
+                 << "\n[+] WAITLIST PASSENGER "
+                 << waitlistPassenger->passengerID << " PROMOTED TO CONFIRMED!"
+                 << Colors::RESET << endl;
+            break;
+          }
         }
-
-        std::cout << "\nBOOKING CANCELLED SUCCESSFULLY!" << std::endl;
+        delete waitlistPassenger;
+      }
     }
 
-    void viewPassengerBookings(std::string passengerID){
-        bool found = false;
+    cout << Colors::BOLD << Colors::BRIGHT_GREEN
+         << "\n[+] BOOKING CANCELLED SUCCESSFULLY!" << Colors::RESET << endl;
+  }
 
-        std::cout << "\n===== YOUR BOOKINGS =====\n";
-        for(int i = 0; i < bookingsRef->size(); i++){
-            if((*bookingsRef)[i].getPassengerID() == passengerID){
-                Booking& b = (*bookingsRef)[i];
-                std::cout << "\nBOOKING ID: " << b.getBookingID()
-                          << "\nFLIGHT ID: " << b.getFlightID()
-                          << "\nSEAT: " << b.getSeatNumber()
-                          << "\nSTATUS: " << b.getBookingStatus() << std::endl;
-                std::cout << "-------------------------" << std::endl;
-                found = true;
-            }
-        }
+  // displays all bookings for a specific passenger
+  void viewPassengerBookings(string passengerID) {
+    bool found = false;
 
-        if(!found){
-            std::cout << "NO BOOKINGS FOUND!" << std::endl;
-        }
-        std::cout << "=========================\n";
+    cout << Colors::BOLD << Colors::BRIGHT_CYAN
+         << "\n========== YOUR BOOKINGS ==========\n"
+         << Colors::RESET;
+    for (int i = 0; i < bookingsRef->size(); i++) {
+      if ((*bookingsRef)[i].getPassengerID() == passengerID) {
+        Booking &b = (*bookingsRef)[i];
+        cout << Colors::BRIGHT_GREEN << "\n[BOOKING] " << b.getBookingID()
+             << Colors::RESET << " | Flight: " << b.getFlightID()
+             << " | Seat: " << b.getSeatNumber()
+             << " | Status: " << b.getBookingStatus() << endl;
+        cout << "------------------------" << endl;
+        found = true;
+      }
     }
 
-    void viewWaitlist(){
-        std::string flightID;
-        std::cin.ignore();
-        std::cout << "\nENTER FLIGHT ID: ";
-        std::getline(std::cin, flightID);
-
-        waitlistQueue.display(flightID);
+    if (!found) {
+      cout << Colors::BOLD << Colors::BRIGHT_RED << "   [-] NO BOOKINGS FOUND!"
+           << Colors::RESET << endl;
     }
+    cout << Colors::BOLD << Colors::BRIGHT_CYAN
+         << "==================================\n"
+         << Colors::RESET;
+  }
 
-    void viewBoardingPriority(){
-        boardingQueue.displayBoardingOrder();
-    }
+  // displays the current waitlist for a flight
+  void viewWaitlist() {
+    string flightID;
+    cin.ignore();
+    cout << "\nENTER FLIGHT ID: ";
+    getline(cin, flightID);
+
+    waitlistQueue.display(flightID);
+  }
+
+  // displays the boarding order based on priority
+  void viewBoardingPriority() { boardingQueue.displayBoardingOrder(); }
 };
 
 #endif

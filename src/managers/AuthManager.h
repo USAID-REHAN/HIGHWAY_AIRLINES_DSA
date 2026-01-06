@@ -1,75 +1,77 @@
 #ifndef AUTHMANAGER_H
 #define AUTHMANAGER_H
 
-#include <vector>
-#include <iostream>
+#include "../CLI/Colors.h"
 #include "../models/Passenger.h"
 #include "FileManager.h"
+#include <iostream>
+#include <string>
+#include <vector>
 
-class AuthManager{
-    private:
-    std::vector<Passenger>* passengersRef;
+using namespace std;
 
-    std::string generatePassengerID(){
-        int maxID = 0;
-        for(int i = 0; i < passengersRef->size(); i++){
-            std::string id = (*passengersRef)[i].getPassengerID();
-            if(id.length() > 1){
-                int numID = std::stoi(id.substr(1));
-                if(numID > maxID){
-                    maxID = numID;
-                }
-            }
+class AuthManager {
+private:
+  vector<Passenger> *passengersRef;
+
+  // generates a unique passenger id
+  string generatePassengerID() {
+    int maxID = 0;
+    for (int i = 0; i < passengersRef->size(); i++) {
+      string id = (*passengersRef)[i].getPassengerID();
+      if (id.length() > 1) {
+        int numID = stoi(id.substr(1));
+        if (numID > maxID) {
+          maxID = numID;
         }
-        maxID++;
-        return "P" + std::to_string(maxID);
+      }
     }
+    maxID++;
+    return "P" + to_string(maxID);
+  }
 
-    public:
-    AuthManager(std::vector<Passenger>* passengers){
-        passengersRef = passengers;
+public:
+  // constructor for auth manager
+  AuthManager(vector<Passenger> *passengers) { passengersRef = passengers; }
+
+  // handles passenger login
+  Passenger *loginPassenger(string email, string password) {
+    for (int i = 0; i < passengersRef->size(); i++) {
+      if ((*passengersRef)[i].getEmail() == email &&
+          (*passengersRef)[i].getPassword() == password) {
+        return &(*passengersRef)[i];
+      }
     }
+    return nullptr;
+  }
 
-    Passenger* loginPassenger(std::string email, std::string password){
-        for(int i = 0; i < passengersRef->size(); i++){
-            if((*passengersRef)[i].getEmail() == email && 
-               (*passengersRef)[i].getPassword() == password){
-                std::cout << "\nLOGIN SUCCESSFUL! WELCOME " 
-                          << (*passengersRef)[i].getName() << "!" << std::endl;
-                return &(*passengersRef)[i];
-            }
-        }
-        std::cout << "\nINVALID EMAIL OR PASSWORD!" << std::endl;
-        return nullptr;
-    }
+  // handles passenger signup
+  bool signupPassenger(string name, string email, string password, string phone,
+                       string type) {
 
-    bool signupPassenger(std::string name, std::string email, std::string password, 
-                        std::string phone, std::string type){
-        
-        // CHECK IF EMAIL ALREADY EXISTS
-        for(int i = 0; i < passengersRef->size(); i++){
-            if((*passengersRef)[i].getEmail() == email){
-                std::cout << "\nEMAIL ALREADY REGISTERED!" << std::endl;
-                return false;
-            }
-        }
-
-        std::string newID = generatePassengerID();
-        Passenger newPassenger(newID, name, email, password, phone, type);
-        passengersRef->push_back(newPassenger);
-
-        std::cout << "\nSIGNUP SUCCESSFUL! YOUR PASSENGER ID IS: " << newID << std::endl;
-        return true;
-    }
-
-    bool loginAdmin(std::string filename, std::string username, std::string password){
-        if(FileManager::verifyAdmin(filename, username, password)){
-            std::cout << "\nADMIN LOGIN SUCCESSFUL!" << std::endl;
-            return true;
-        }
-        std::cout << "\nINVALID ADMIN CREDENTIALS!" << std::endl;
+    // CHECK IF EMAIL ALREADY EXISTS
+    for (int i = 0; i < passengersRef->size(); i++) {
+      if ((*passengersRef)[i].getEmail() == email) {
+        cout << Colors::BOLD << Colors::BRIGHT_RED
+             << "\n[-] EMAIL ALREADY REGISTERED!" << Colors::RESET << endl;
         return false;
+      }
     }
+
+    string newID = generatePassengerID();
+    Passenger newPassenger(newID, name, email, password, phone, type);
+    passengersRef->push_back(newPassenger);
+
+    cout << Colors::BOLD << Colors::BRIGHT_GREEN
+         << "\n[+] SIGNUP SUCCESSFUL! YOUR PASSENGER ID IS: " << newID
+         << Colors::RESET << endl;
+    return true;
+  }
+
+  // handles admin login
+  bool loginAdmin(string filename, string username, string password) {
+    return FileManager::verifyAdmin(filename, username, password);
+  }
 };
 
 #endif

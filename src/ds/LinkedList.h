@@ -1,70 +1,76 @@
 #ifndef LINKEDLIST_H
 #define LINKEDLIST_H
 
-#include <string>
 #include <iostream>
+#include <string>
 
-struct LogNode{
-    std::string action;
-    std::string timestamp;
-    LogNode* next;
+using namespace std;
 
-    LogNode(std::string act, std::string time){
-        action = act;
-        timestamp = time;
-        next = nullptr;
-    }
+struct LogNode {
+  string action;
+  string timestamp;
+  LogNode *next;
+
+  // constructor for log node
+  LogNode(string act, string time) {
+    action = act;
+    timestamp = time;
+    next = nullptr;
+  }
 };
 
-class LinkedList{
-    private:
-    LogNode* head;
+class LinkedList {
+private:
+  LogNode *head;
 
-    public:
-    LinkedList(){
-        head = nullptr;
+public:
+  // constructor for linked list
+  LinkedList() { head = nullptr; }
+
+  // inserts a new log entry at the end of the list
+  void insertEnd(string action, string timestamp) {
+    LogNode *newNode = new LogNode(action, timestamp);
+
+    if (head == nullptr) {
+      head = newNode;
+      return;
     }
 
-    void insertEnd(std::string action, std::string timestamp){
-        LogNode* newNode = new LogNode(action, timestamp);
+    LogNode *temp = head;
+    while (temp->next != nullptr) {
+      temp = temp->next;
+    }
+    temp->next = newNode;
+  }
 
-        if(head == nullptr){
-            head = newNode;
-            return;
-        }
-
-        LogNode* temp = head;
-        while(temp->next != nullptr){
-            temp = temp->next;
-        }
-        temp->next = newNode;
+  // displays all logs in the list
+  void displayAll() {
+    if (head == nullptr) {
+      cout << "   [-] NO ACTIVITY LOGS AVAILABLE!" << endl;
+      return;
     }
 
-    void displayAll(){
-        if(head == nullptr){
-            std::cout << "NO ACTIVITY LOGS AVAILABLE!" << std::endl;
-            return;
-        }
-
-        std::cout << "\n========== ACTIVITY LOG ==========\n";
-        LogNode* temp = head;
-        int count = 1;
-        while(temp != nullptr){
-            std::cout << count << ". [" << temp->timestamp << "] " << temp->action << std::endl;
-            temp = temp->next;
-            count++;
-        }
-        std::cout << "==================================\n";
+    cout << "\n========== ACTIVITY LOG ==========\n";
+    LogNode *temp = head;
+    int count = 1;
+    while (temp != nullptr) {
+      cout << "   [" << count << "] [" << temp->timestamp << "] "
+           << temp->action << endl;
+      temp = temp->next;
+      count++;
     }
+    cout << "==================================\n";
+  }
 
-    ~LinkedList(){
-        LogNode* temp = head;
-        while(temp != nullptr){
-            LogNode* nextNode = temp->next;
-            delete temp;
-            temp = nextNode;
-        }
+  // destructor to free memory
+  ~LinkedList() {
+    LogNode *temp = head;
+    while (temp != nullptr) {
+      LogNode *nextNode = temp->next;
+      delete temp;
+      temp = nextNode;
     }
+  }
 };
 
 #endif

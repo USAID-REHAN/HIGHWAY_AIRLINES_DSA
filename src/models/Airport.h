@@ -3,34 +3,42 @@
 
 #include <string>
 
-class Airport{
-    private:
-    std::string airportCode;
-    std::string airportName;
-    std::string city;
+using namespace std;
 
-    public:
-    Airport(){
-        airportCode = "";
-        airportName = "";
-        city = "";
-    }
+class Airport {
+private:
+  string airportCode;
+  string airportName;
+  string city;
 
-    Airport(std::string code, std::string name, std::string c){
-        airportCode = code;
-        airportName = name;
-        city = c;
-    }
+public:
+  // default constructor for airport
+  Airport() {
+    airportCode = "";
+    airportName = "";
+    city = "";
+  }
 
-    // SETTERS
-    void setAirportCode(std::string code){ airportCode = code; }
-    void setAirportName(std::string name){ airportName = name; }
-    void setCity(std::string c){ city = c; }
+  // parameterized constructor for airport
+  Airport(string code, string name, string c) {
+    airportCode = code;
+    airportName = name;
+    city = c;
+  }
 
-    // GETTERS
-    std::string getAirportCode() const { return airportCode; }
-    std::string getAirportName() const { return airportName; }
-    std::string getCity() const { return city; }
+  // sets the airport code
+  void setAirportCode(string code) { airportCode = code; }
+  // sets the airport name
+  void setAirportName(string name) { airportName = name; }
+  // sets the city
+  void setCity(string c) { city = c; }
+
+  // returns the airport code
+  string getAirportCode() const { return airportCode; }
+  // returns the airport name
+  string getAirportName() const { return airportName; }
+  // returns the city
+  string getCity() const { return city; }
 };
 
 #endif
