@@ -1,6 +1,7 @@
 #ifndef GRAPH_H
 #define GRAPH_H
 
+#include "../CLI/Colors.h"
 #include <iostream>
 #include <limits>
 #include <string>
@@ -111,13 +112,19 @@ public:
 
     // DISPLAY RESULT
     if (dist[end] == numeric_limits<int>::max()) {
-      cout << "\n   [-] NO PATH EXISTS BETWEEN " << startCode << " AND "
-           << endCode << "!" << endl;
+      cout << Colors::BOLD << Colors::BRIGHT_RED
+           << "\n   [-] NO PATH EXISTS BETWEEN " << startCode << " AND "
+           << endCode << "!" << Colors::RESET << endl;
     } else {
-      cout << "\n========== SHORTEST ROUTE ==========\n";
-      cout << "   From: " << startCode << " > To: " << endCode << endl;
-      cout << "   Distance: " << dist[end] << " KM\n";
-      cout << "\n   Route Path: ";
+      cout << Colors::BOLD << Colors::BRIGHT_CYAN
+           << "\n========== SHORTEST ROUTE ==========\n"
+           << Colors::RESET;
+      cout << Colors::BRIGHT_GREEN << "   From: " << Colors::RESET << startCode
+           << Colors::BRIGHT_GREEN << " > To: " << Colors::RESET << endCode
+           << endl;
+      cout << Colors::BRIGHT_YELLOW << "   Distance: " << Colors::RESET
+           << dist[end] << " KM\n";
+      cout << Colors::BRIGHT_GREEN << "\n   Route Path: " << Colors::RESET;
 
       // RECONSTRUCT PATH
       vector<int> path;
@@ -134,7 +141,10 @@ public:
           cout << " > ";
         }
       }
-      cout << "\n====================================\n";
+      cout << "\n"
+           << Colors::BOLD << Colors::BRIGHT_CYAN
+           << "====================================\n"
+           << Colors::RESET;
     }
 
     delete[] dist;
@@ -144,16 +154,21 @@ public:
 
   // displays all connections in the graph
   void displayGraph() {
-    cout << "\n========== AIRPORT NETWORK ==========\n";
+    cout << Colors::BOLD << Colors::BRIGHT_CYAN
+         << "\n========== AIRPORT NETWORK ==========\n"
+         << Colors::RESET;
     for (int i = 0; i < numVertices; i++) {
-      cout << "   " << airportCodes[i] << " > ";
+      cout << Colors::BRIGHT_GREEN << "   " << airportCodes[i] << Colors::RESET
+           << " > ";
       for (int j = 0; j < adjacencyList[i].size(); j++) {
         cout << airportCodes[adjacencyList[i][j].destination] << "("
              << adjacencyList[i][j].weight << "km) ";
       }
       cout << endl;
     }
-    cout << "====================================\n";
+    cout << Colors::BOLD << Colors::BRIGHT_CYAN
+         << "====================================\n"
+         << Colors::RESET;
   }
 };
 

@@ -1,6 +1,7 @@
 #ifndef LINKEDLIST_H
 #define LINKEDLIST_H
 
+#include "../CLI/Colors.h"
 #include <iostream>
 #include <string>
 
@@ -46,20 +47,25 @@ public:
   // displays all logs in the list
   void displayAll() {
     if (head == nullptr) {
-      cout << "   [-] NO ACTIVITY LOGS AVAILABLE!" << endl;
+      cout << Colors::BOLD << Colors::BRIGHT_RED
+           << "   [-] NO ACTIVITY LOGS AVAILABLE!" << Colors::RESET << endl;
       return;
     }
 
-    cout << "\n========== ACTIVITY LOG ==========\n";
+    cout << Colors::BOLD << Colors::BRIGHT_CYAN
+         << "\n========== ACTIVITY LOG ==========\n"
+         << Colors::RESET;
     LogNode *temp = head;
     int count = 1;
     while (temp != nullptr) {
-      cout << "   [" << count << "] [" << temp->timestamp << "] "
-           << temp->action << endl;
+      cout << Colors::BRIGHT_GREEN << "   [" << count << "] " << Colors::RESET
+           << "[" << temp->timestamp << "] " << temp->action << endl;
       temp = temp->next;
       count++;
     }
-    cout << "==================================\n";
+    cout << Colors::BOLD << Colors::BRIGHT_CYAN
+         << "==================================\n"
+         << Colors::RESET;
   }
 
   // destructor to free memory

@@ -1,17 +1,19 @@
-#include "managers/AuthManager.h"
-#include "managers/BookingManager.h"
-#include "managers/FileManager.h"
-#include "managers/FlightManager.h"
-#include "managers/RouteManager.h"
-#include "models/Aircraft.h"
-#include "models/Airport.h"
-#include "models/Booking.h"
-#include "models/Flight.h"
-#include "models/Passenger.h"
-#include "CLI/Menu.h"
+#include "src/CLI/Colors.h"
+#include "src/CLI/Menu.h"
+#include "src/managers/AuthManager.h"
+#include "src/managers/BookingManager.h"
+#include "src/managers/FileManager.h"
+#include "src/managers/FlightManager.h"
+#include "src/managers/RouteManager.h"
+#include "src/models/Aircraft.h"
+#include "src/models/Airport.h"
+#include "src/models/Booking.h"
+#include "src/models/Flight.h"
+#include "src/models/Passenger.h"
 #include <iostream>
 #include <string>
 #include <vector>
+
 
 using namespace std;
 
@@ -25,15 +27,25 @@ int main() {
   vector<Airport> airports = FileManager::loadAirports("data/airports.txt");
   vector<Aircraft> aircrafts = FileManager::loadAircrafts("data/aircrafts.txt");
 
-  cout << "\n=========================================" << endl;
-  cout << "   SYSTEM INITIALIZED SUCCESSFULLY!     " << endl;
-  cout << "=========================================" << endl;
-  cout << "LOADED " << passengers.size() << " PASSENGERS" << endl;
-  cout << "LOADED " << flights.size() << " FLIGHTS" << endl;
-  cout << "LOADED " << bookings.size() << " BOOKINGS" << endl;
-  cout << "LOADED " << airports.size() << " AIRPORTS" << endl;
-  cout << "LOADED " << aircrafts.size() << " AIRCRAFTS" << endl;
-  cout << "=========================================" << endl;
+  cout << "\n"
+       << Colors::BOLD << Colors::BRIGHT_CYAN
+       << "   =========================================\n"
+       << "   |  SYSTEM INITIALIZED SUCCESSFULLY!    |\n"
+       << "   =========================================\n"
+       << Colors::RESET;
+  cout << Colors::BRIGHT_GREEN << "   [+] LOADED " << passengers.size()
+       << " PASSENGERS" << Colors::RESET << endl;
+  cout << Colors::BRIGHT_GREEN << "   [+] LOADED " << flights.size()
+       << " FLIGHTS" << Colors::RESET << endl;
+  cout << Colors::BRIGHT_GREEN << "   [+] LOADED " << bookings.size()
+       << " BOOKINGS" << Colors::RESET << endl;
+  cout << Colors::BRIGHT_GREEN << "   [+] LOADED " << airports.size()
+       << " AIRPORTS" << Colors::RESET << endl;
+  cout << Colors::BRIGHT_GREEN << "   [+] LOADED " << aircrafts.size()
+       << " AIRCRAFTS" << Colors::RESET << endl;
+  cout << Colors::BOLD << Colors::BRIGHT_CYAN
+       << "   =========================================\n"
+       << Colors::RESET;
 
   // INITIALIZE MANAGERS
   AuthManager authManager(&passengers);
@@ -44,7 +56,8 @@ int main() {
   // INITIALIZE MENU
   Menu menu(&authManager, &flightManager, &bookingManager, &routeManager);
 
-  cout << "\nPRESS ANY KEY TO START...";
+  cout << Colors::BOLD << Colors::YELLOW << "\n   Press any key to start..."
+       << Colors::RESET;
   cin.get();
 
   // MAIN PROGRAM LOOP
@@ -64,13 +77,18 @@ int main() {
       menu.handleAdminLogin();
       break;
     case 4:
-      cout << "\n=========================================" << endl;
-      cout << "   SAVING DATA AND EXITING SYSTEM...    " << endl;
-      cout << "=========================================" << endl;
+      cout << Colors::BOLD << Colors::BRIGHT_YELLOW
+           << "\n   =========================================\n"
+           << "   |   SAVING DATA AND EXITING SYSTEM   |\n"
+           << "   =========================================\n"
+           << Colors::RESET;
       break;
     default:
-      cout << "\nINVALID CHOICE! PLEASE TRY AGAIN." << endl;
-      cout << "\nPRESS ANY KEY TO CONTINUE...";
+      cout << Colors::BOLD << Colors::BRIGHT_RED
+           << "\n   [-] INVALID CHOICE! PLEASE TRY AGAIN." << Colors::RESET
+           << endl;
+      cout << Colors::BOLD << Colors::YELLOW
+           << "   Press any key to continue..." << Colors::RESET;
       cin.ignore();
       cin.get();
       break;
@@ -82,9 +100,13 @@ int main() {
   FileManager::saveFlights("data/flights.txt", flights);
   FileManager::saveBookings("data/bookings.txt", bookings);
 
-  cout << "\nDATA SAVED SUCCESSFULLY!" << endl;
-  cout << "THANK YOU FOR USING HIGHWAYS AIRLINE SYSTEM!" << endl;
-  cout << "GOODBYE!" << endl;
+  cout << Colors::BOLD << Colors::BRIGHT_GREEN
+       << "\n[+] DATA SAVED SUCCESSFULLY!" << Colors::RESET << endl;
+  cout << Colors::BRIGHT_CYAN
+       << "   THANK YOU FOR USING HIGHWAYS AIRLINE SYSTEM!" << Colors::RESET
+       << endl;
+  cout << Colors::BRIGHT_YELLOW << "   GOODBYE!" << Colors::RESET << endl
+       << Colors::RESET;
 
   return 0;
 }

@@ -1,6 +1,7 @@
 #ifndef QUEUE_H
 #define QUEUE_H
 
+#include "../CLI/Colors.h"
 #include <iostream>
 #include <string>
 
@@ -99,22 +100,27 @@ public:
   // displays passengers in the waitlist for a flight
   void display(string flightID) {
     if (isEmpty()) {
-      cout << "   [-] NO PASSENGERS IN WAITLIST!" << endl;
+      cout << Colors::BOLD << Colors::BRIGHT_RED
+           << "   [-] NO PASSENGERS IN WAITLIST!" << Colors::RESET << endl;
       return;
     }
 
-    cout << "\n========== WAITLIST FOR FLIGHT " << flightID << " ==========\n";
+    cout << Colors::BOLD << Colors::BRIGHT_CYAN
+         << "\n========== WAITLIST FOR FLIGHT " << flightID << " ==========\n"
+         << Colors::RESET;
     QueueNode *temp = front;
     int position = 1;
     while (temp != nullptr) {
       if (temp->flightID == flightID) {
-        cout << "   [" << position << "] Passenger: " << temp->passengerID
-             << endl;
+        cout << Colors::BRIGHT_GREEN << "   [" << position << "] "
+             << Colors::RESET << "Passenger: " << temp->passengerID << endl;
         position++;
       }
       temp = temp->next;
     }
-    cout << "=============================================\n";
+    cout << Colors::BOLD << Colors::BRIGHT_CYAN
+         << "=============================================\n"
+         << Colors::RESET;
   }
 
   // destructor to free memory

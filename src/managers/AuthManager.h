@@ -52,8 +52,6 @@ public:
     // CHECK IF EMAIL ALREADY EXISTS
     for (int i = 0; i < passengersRef->size(); i++) {
       if ((*passengersRef)[i].getEmail() == email) {
-        cout << Colors::BOLD << Colors::BRIGHT_RED
-             << "\n[-] EMAIL ALREADY REGISTERED!" << Colors::RESET << endl;
         return false;
       }
     }
@@ -61,10 +59,6 @@ public:
     string newID = generatePassengerID();
     Passenger newPassenger(newID, name, email, password, phone, type);
     passengersRef->push_back(newPassenger);
-
-    cout << Colors::BOLD << Colors::BRIGHT_GREEN
-         << "\n[+] SIGNUP SUCCESSFUL! YOUR PASSENGER ID IS: " << newID
-         << Colors::RESET << endl;
     return true;
   }
 

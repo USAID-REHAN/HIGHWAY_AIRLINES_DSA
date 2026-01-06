@@ -258,7 +258,7 @@ public:
   void viewWaitlist() {
     string flightID;
     cin.ignore();
-    cout << "\nENTER FLIGHT ID: ";
+    cout << Colors::BOLD << "\nENTER FLIGHT ID: " << Colors::RESET;
     getline(cin, flightID);
 
     waitlistQueue.display(flightID);

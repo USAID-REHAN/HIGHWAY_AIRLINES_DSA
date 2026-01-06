@@ -286,10 +286,14 @@ public:
     string origin, destination;
     cin.ignore();
 
-    cout << "\n===== SEARCH FLIGHTS BY ROUTE =====\n";
-    cout << "ENTER DEPARTURE CITY (AIRPORT CODE): ";
+    cout << Colors::BOLD << Colors::BRIGHT_CYAN
+         << "\n===== SEARCH FLIGHTS BY ROUTE =====\n"
+         << Colors::RESET;
+    cout << Colors::BOLD
+         << "ENTER DEPARTURE CITY (AIRPORT CODE): " << Colors::RESET;
     getline(cin, origin);
-    cout << "ENTER DESTINATION CITY (AIRPORT CODE): ";
+    cout << Colors::BOLD
+         << "ENTER DESTINATION CITY (AIRPORT CODE): " << Colors::RESET;
     getline(cin, destination);
 
     vector<Flight> matchingFlights;
@@ -301,18 +305,21 @@ public:
     }
 
     if (matchingFlights.empty()) {
-      cout << "\n[-] NO FLIGHTS FOUND FOR ROUTE " << origin << " > "
-           << destination << endl;
+      cout << Colors::BOLD << Colors::BRIGHT_RED
+           << "\n[-] NO FLIGHTS FOUND FOR ROUTE " << origin << " > "
+           << destination << Colors::RESET << endl;
       return;
     }
 
-    cout << "\n========== AVAILABLE FLIGHTS: " << origin << " > " << destination
-         << " ==========\n";
+    cout << Colors::BOLD << Colors::BRIGHT_CYAN
+         << "\n========== AVAILABLE FLIGHTS: " << origin << " > " << destination
+         << " ==========\n"
+         << Colors::RESET;
     for (int i = 0; i < matchingFlights.size(); i++) {
       Flight &f = matchingFlights[i];
       int availableSeats = f.getCapacity() - f.getBookedSeats();
-      cout << "\n"
-           << (i + 1) << ". FLIGHT ID: " << f.getFlightID()
+      cout << Colors::BRIGHT_GREEN << "\n"
+           << (i + 1) << ". FLIGHT ID: " << f.getFlightID() << Colors::RESET
            << "\n   AIRCRAFT: " << f.getAircraftID()
            << "\n   DEPARTURE: " << f.getDepartureTime()
            << " | ARRIVAL: " << f.getArrivalTime()
@@ -321,25 +328,30 @@ public:
            << f.getCapacity() << "\n   STATUS: " << f.getStatus() << endl;
       cout << "   --------------------------------" << endl;
     }
-    cout << "====================================================\n";
+    cout << Colors::BOLD << Colors::BRIGHT_CYAN
+         << "====================================================\n"
+         << Colors::RESET;
   }
 
   // searches for a flight by its id
   void searchFlightByID() {
     string flightID;
     cin.ignore();
-    cout << "\nENTER FLIGHT ID: ";
+    cout << Colors::BOLD << "\nENTER FLIGHT ID: " << Colors::RESET;
     getline(cin, flightID);
 
     Flight *flight = flightBST.search(flightID);
     if (flight == nullptr) {
-      cout << "FLIGHT NOT FOUND!" << endl;
+      cout << Colors::BOLD << Colors::BRIGHT_RED << "[-] FLIGHT NOT FOUND!"
+           << Colors::RESET << endl;
       return;
     }
 
-    cout << "\n===== FLIGHT DETAILS =====\n";
-    cout << "   Flight ID: " << flight->getFlightID()
-         << "\n   Aircraft: " << flight->getAircraftID()
+    cout << Colors::BOLD << Colors::BRIGHT_CYAN
+         << "\n===== FLIGHT DETAILS =====\n"
+         << Colors::RESET;
+    cout << Colors::BRIGHT_GREEN << "   [FLIGHT] " << flight->getFlightID()
+         << Colors::RESET << "\n   Aircraft: " << flight->getAircraftID()
          << "\n   Route: " << flight->getOrigin() << " > "
          << flight->getDestination()
          << "\n   Departure: " << flight->getDepartureTime()
@@ -348,24 +360,30 @@ public:
          << "\n   Seats: " << flight->getBookedSeats() << "/"
          << flight->getCapacity() << " | Status: " << flight->getStatus()
          << endl;
-    cout << "==========================\n";
+    cout << Colors::BOLD << Colors::BRIGHT_CYAN
+         << "==========================\n"
+         << Colors::RESET;
   }
 
   // changes the status of a specific flight
   void changeFlightStatus() {
     string flightID, newStatus;
     cin.ignore();
-    cout << "\nENTER FLIGHT ID: ";
+    cout << Colors::BOLD << "\nENTER FLIGHT ID: " << Colors::RESET;
     getline(cin, flightID);
 
     Flight *flight = flightBST.search(flightID);
     if (flight == nullptr) {
-      cout << "FLIGHT NOT FOUND!" << endl;
+      cout << Colors::BOLD << Colors::BRIGHT_RED << "[-] FLIGHT NOT FOUND!"
+           << Colors::RESET << endl;
       return;
     }
 
-    cout << "CURRENT STATUS: " << flight->getStatus() << endl;
-    cout << "ENTER NEW STATUS (SCHEDULED/DELAYED/CANCELLED/COMPLETED): ";
+    cout << Colors::BOLD << "CURRENT STATUS: " << flight->getStatus()
+         << Colors::RESET << endl;
+    cout << Colors::BOLD
+         << "ENTER NEW STATUS (SCHEDULED/DELAYED/CANCELLED/COMPLETED): "
+         << Colors::RESET;
     getline(cin, newStatus);
 
     flight->setStatus(newStatus);
@@ -381,13 +399,15 @@ public:
     activityLog.insertEnd("Changed Status of Flight " + flightID + " to " +
                               newStatus,
                           getCurrentTimestamp());
-    cout << "\nSTATUS UPDATED SUCCESSFULLY!" << endl;
+    cout << Colors::BOLD << Colors::BRIGHT_GREEN
+         << "\n[+] STATUS UPDATED SUCCESSFULLY!" << Colors::RESET << endl;
   }
 
   // undoes the last add or update action
   void undoLastAction() {
     if (undoStack.isEmpty()) {
-      cout << "\nNO ACTIONS TO UNDO!" << endl;
+      cout << Colors::BOLD << Colors::BRIGHT_RED << "\n[-] NO ACTIONS TO UNDO!"
+           << Colors::RESET << endl;
       return;
     }
 
@@ -403,10 +423,14 @@ public:
         }
       }
       flightBST.remove(flightID);
-      cout << "\nUNDO: REMOVED ADDED FLIGHT " << flightID << endl;
+      cout << Colors::BOLD << Colors::BRIGHT_GREEN
+           << "\n[+] UNDO: REMOVED ADDED FLIGHT " << flightID << Colors::RESET
+           << endl;
     } else {
       // UNDO AN UPDATE OR DELETE = RESTORE
-      cout << "\nUNDO: RESTORING FLIGHT " << flightID << endl;
+      cout << Colors::BOLD << Colors::BRIGHT_GREEN
+           << "\n[+] UNDO: RESTORING FLIGHT " << flightID << Colors::RESET
+           << endl;
       bool found = false;
       for (int i = 0; i < flightsRef->size(); i++) {
         if ((*flightsRef)[i].getFlightID() == flightID) {
@@ -424,7 +448,8 @@ public:
     }
 
     activityLog.insertEnd("Undo Action", getCurrentTimestamp());
-    cout << "UNDO SUCCESSFUL!" << endl;
+    cout << Colors::BOLD << Colors::BRIGHT_GREEN << "[+] UNDO SUCCESSFUL!"
+         << Colors::RESET << endl;
   }
 
   // displays the system activity log

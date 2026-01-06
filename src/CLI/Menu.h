@@ -225,8 +225,11 @@ public:
       break;
     }
 
-    authManager->signupPassenger(name, email, password, phone, type);
-    printSuccess("Signup successful! You can now login.");
+    if (authManager->signupPassenger(name, email, password, phone, type)) {
+      printSuccess("Signup successful! You can now login.");
+    } else {
+      printError("Email already registered! Please use a different email.");
+    }
     waitKey();
   }
 
@@ -319,12 +322,15 @@ public:
       switch (choice) {
       case 1:
         flightManager->addFlight();
+        waitKey();
         break;
       case 2:
         flightManager->updateFlight();
+        waitKey();
         break;
       case 3:
         flightManager->deleteFlight();
+        waitKey();
         break;
       case 4:
         flightManager->displayAllFlights();

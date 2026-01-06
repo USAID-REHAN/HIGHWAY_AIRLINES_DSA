@@ -1,6 +1,7 @@
 #ifndef PRIORITYQUEUE_H
 #define PRIORITYQUEUE_H
 
+#include "../CLI/Colors.h"
 #include "../models/Passenger.h"
 #include <iostream>
 #include <string>
@@ -105,11 +106,15 @@ public:
   // displays all passengers in boarding order
   void displayBoardingOrder() {
     if (size == 0) {
-      cout << "   [-] NO PASSENGERS IN BOARDING QUEUE!" << endl;
+      cout << Colors::BOLD << Colors::BRIGHT_RED
+           << "   [-] NO PASSENGERS IN BOARDING QUEUE!" << Colors::RESET
+           << endl;
       return;
     }
 
-    cout << "\n========== BOARDING ORDER (BY PRIORITY) ==========\n";
+    cout << Colors::BOLD << Colors::BRIGHT_CYAN
+         << "\n========== BOARDING ORDER (BY PRIORITY) ==========\n"
+         << Colors::RESET;
 
     // CREATE TEMPORARY COPY TO DISPLAY
     PriorityNode *tempHeap = new PriorityNode[size];
@@ -130,8 +135,8 @@ public:
       }
 
       Passenger p = tempHeap[minIndex].passenger;
-      cout << "   [" << position << "] " << p.getName()
-           << " (ID: " << p.getPassengerID()
+      cout << Colors::BRIGHT_GREEN << "   [" << position << "] "
+           << Colors::RESET << p.getName() << " (ID: " << p.getPassengerID()
            << " | Type: " << p.getPassengerType() << ")" << endl;
 
       // REMOVE FROM TEMP ARRAY
@@ -141,7 +146,9 @@ public:
     }
 
     delete[] tempHeap;
-    cout << "=================================================\n";
+    cout << Colors::BOLD << Colors::BRIGHT_CYAN
+         << "=================================================\n"
+         << Colors::RESET;
   }
 
   // returns current size of the queue
